@@ -3,1478 +3,753 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yash Bhandurge | Terminal Portfolio</title>
+    <title>Arduino for Innovation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #00ff41; /* Matrix green */
-            --secondary-color: #00cc33; /* Darker green */
-            --accent-color: #ff3131; /* Red for alerts */
-            --bg-color: #000;
-            --terminal-bg: rgba(0, 0, 0, 0.9);
-            --terminal-border: #00ff41;
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
-            font-family: 'Share Tech Mono', monospace;
-            background-color: var(--bg-color);
-            color: var(--primary-color);
-            line-height: 1.6;
-            overflow-x: hidden;
+            font-family: 'Poppins', sans-serif;
+            color: #FFFFFF;
+            overflow: hidden;
+            background: linear-gradient(135deg, #00979D, #00979D, #005C5F);
             position: relative;
-            height: 100vh;
         }
-
-        /* Matrix Rain Background */
-        #matrix-canvas {
-            position: fixed;
+        
+        /* Circuit Pattern Overlay */
+        body::before {
+            content: "";
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 1;
+            background-image: 
+                linear-gradient(90deg, rgba(0, 230, 118, 0.12) 1px, transparent 1px),
+                linear-gradient(0deg, rgba(0, 230, 118, 0.12) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
         }
-
-        /* Terminal Container */
-        .terminal-container {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%;
-            max-width: 800px;
-            height: 70vh;
-            max-height: 600px;
-            z-index: 10;
-            border-radius: 10px;
+        
+        .slide-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
             overflow: hidden;
-            box-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
-            border: 2px solid var(--terminal-border);
-            background-color: var(--terminal-bg);
             display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Progress Bar */
+        .progress-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background-color: rgba(0, 0, 0, 0.3);
+            z-index: 100;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #FF9800, #FFC107);
+            width: 0%;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(255, 152, 0, 0.7);
+        }
+        
+        .slide {
+            width: 90%;
+            max-width: 1200px;
+            height: 85%;
+            padding: 40px;
+            display: none;
             flex-direction: column;
-        }
-
-        /* Terminal Header */
-        .terminal-header {
-            background-color: rgba(0, 20, 0, 0.8);
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            border-bottom: 1px solid var(--terminal-border);
+            text-align: center;
+            opacity: 0;
+            transform: translateX(-30px);
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-
-        .terminal-title {
-            font-family: 'Orbitron', sans-serif;
+        
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        /* Title Box - Updated to Black Background */
+        .title-box {
+            background: #000000;
+            padding: 16px;
+            border-radius: 18px;
+            box-shadow: 0px 6px 12px rgba(0,0,0,0.35);
+            margin-bottom: 30px;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slideFromBottom 0.8s forwards;
+            border: 2px solid #00979D;
+        }
+        
+        @keyframes slideFromBottom {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .slide h1 {
+            font-family: 'Montserrat', sans-serif;
             font-weight: 700;
-            color: var(--primary-color);
-            font-size: 1.2rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            font-size: 42px;
+            color: #00979D; /* Arduino Blue */
+            text-shadow: none;
         }
-
-        .terminal-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .terminal-button {
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-
-        .close {
-            background-color: var(--accent-color);
-        }
-
-        .minimize {
-            background-color: #ffbd2e;
-        }
-
-        .maximize {
-            background-color: #28ca42;
-        }
-
-        /* Terminal Body */
-        .terminal-body {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            font-family: 'Roboto Mono', monospace;
-            font-size: 1rem;
-            background-color: rgba(0, 0, 0, 0.7);
-        }
-
-        .terminal-line {
-            margin-bottom: 10px;
-            display: flex;
-        }
-
-        .prompt {
-            color: var(--primary-color);
-            margin-right: 10px;
-            font-weight: bold;
-        }
-
-        .command {
-            color: #cccccc;
-        }
-
-        .output {
-            color: var(--primary-color);
-            white-space: pre-wrap;
-        }
-
-        .terminal-input-container {
-            display: flex;
-            align-items: center;
+        
+        .slide h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 28px;
+            color: #FF9800; /* Arduino Orange */
             margin-top: 10px;
         }
-
-        .terminal-input {
-            flex: 1;
-            background: none;
-            border: none;
-            color: #cccccc;
-            font-family: 'Roboto Mono', monospace;
-            font-size: 1rem;
-            outline: none;
-        }
-
-        .cursor {
-            display: inline-block;
-            width: 10px;
-            height: 20px;
-            background-color: var(--primary-color);
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-        }
-
-        /* Portfolio Content (Hidden by default) */
-        .portfolio {
-            position: fixed;
-            top: 0;
-            left: 0;
+        
+        /* Content Box */
+        .content-box {
+            background: rgba(0,0,0,0.4);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 151, 157, 0.3);
+            margin-bottom: 20px;
             width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.95);
-            z-index: 5;
-            overflow-y: auto;
+            max-width: 900px;
+        }
+        
+        .slide p, .slide li {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 400;
+            font-size: 22px;
+            color: #FFFFFF;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        
+        .slide ul, .slide ol {
+            list-style-type: none;
+            padding-left: 0;
+            max-width: 900px;
+            width: 100%;
+        }
+        
+        .slide li {
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: 20px;
             opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
+            animation: sequentialFadeIn 0.5s forwards;
         }
-
-        .portfolio.visible opacity: {
-            1;
-            pointer-events: auto;
+        
+        .slide li:nth-child(1) { animation-delay: 0.2s; }
+        .slide li:nth-child(2) { animation-delay: 0.4s; }
+        .slide li:nth-child(3) { animation-delay: 0.6s; }
+        .slide li:nth-child(4) { animation-delay: 0.8s; }
+        .slide li:nth-child(5) { animation-delay: 1.0s; }
+        
+        @keyframes sequentialFadeIn {
+            to {
+                opacity: 1;
+            }
         }
-
-        /* Header */
-        header {
-            position: fixed;
-            top: 0;
+        
+        .slide li::before {
+            content: '•';
+            position: absolute;
+            left: 15px;
+            color: #FF9800; /* Arduino Orange */
+            font-size: 24px;
+        }
+        
+        /* Code Block - Arduino IDE Style */
+        .code-block {
+            font-family: 'Fira Code', monospace;
+            font-weight: 500;
+            font-size: 20px;
+            line-height: 1.5;
+            background: #2B2B2B;
+            color: #F8F8F2;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: left;
+            max-width: 900px;
+            width: 100%;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid #00979D;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            white-space: pre;
+        }
+        
+        /* Arduino IDE Syntax Highlighting */
+        .keyword { color: #CC7832; } /* Orange-brown for keywords */
+        .function { color: #FFC66D; } /* Yellow for functions */
+        .number { color: #6897BB; } /* Light blue for numbers */
+        .constant { color: #9876AA; } /* Purple for constants */
+        .builtin { color: #FFC66D; } /* Yellow for built-in functions */
+        .operator { color: #A9B7C6; } /* Light gray for operators */
+        .punctuation { color: #A9B7C6; } /* Light gray for punctuation */
+        .comment { color: #6A8759; font-style: italic; } /* Green for comments */
+        
+        /* Icon Style */
+        .icon-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 70px;
+            height: 70px;
+            background-color: rgba(0,0,0,0.4);
+            border: 2px solid #00979D;
+            border-radius: 50%;
+            margin: 20px auto;
+        }
+        
+        .icon-container i {
+            font-size: 28px;
+            color: #FF9800; /* Arduino Orange */
+        }
+        
+        /* Two Column Layout */
+        .two-column {
+            display: flex;
+            width: 100%;
+            max-width: 1100px;
+            gap: 30px;
+            margin: 20px 0;
+        }
+        
+        .column {
+            flex: 1;
+            text-align: left;
+        }
+        
+        .column h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 24px;
+            color: #00979D; /* Arduino Blue */
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        /* Bullet with Icon */
+        .bullet-with-icon li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            opacity: 0;
+            animation: sequentialFadeIn 0.5s forwards;
+        }
+        
+        .bullet-with-icon li:nth-child(1) { animation-delay: 0.2s; }
+        .bullet-with-icon li:nth-child(2) { animation-delay: 0.4s; }
+        .bullet-with-icon li:nth-child(3) { animation-delay: 0.6s; }
+        .bullet-with-icon li:nth-child(4) { animation-delay: 0.8s; }
+        .bullet-with-icon li:nth-child(5) { animation-delay: 1.0s; }
+        
+        .bullet-with-icon li i {
+            margin-right: 15px;
+            font-size: 28px;
+            color: #FF9800; /* Arduino Orange */
+            background-color: rgba(0,0,0,0.4);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            border: 2px solid #00979D;
+            flex-shrink: 0;
+        }
+        
+        /* Quiz Box */
+        .quiz-box {
+            background: linear-gradient(135deg, #00979D, #005C5F);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0px 8px 15px rgba(0,0,0,0.4);
+            width: 100%;
+            max-width: 900px;
+            border: 2px solid #000000;
+        }
+        
+        .quiz-question {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 26px;
+            color: #FFFFFF;
+            margin-bottom: 20px;
+        }
+        
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .quiz-option {
+            background: rgba(0,0,0,0.3);
+            border: 2px solid rgba(0, 151, 157, 0.5);
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 20px;
+            font-weight: 500;
+        }
+        
+        .quiz-option:hover {
+            background: rgba(0,0,0,0.5);
+            transform: translateY(-3px);
+            border-color: #FF9800;
+        }
+        
+        .quiz-option.correct {
+            background: rgba(0, 151, 157, 0.5);
+            border-color: #FF9800;
+        }
+        
+        .quiz-option.incorrect {
+            background: rgba(244, 67, 54, 0.5);
+            border-color: #f44336;
+        }
+        
+        /* Navigation Arrows */
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 24px;
+            color: #FFFFFF;
+            background: #00979D;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s ease;
+            box-shadow: 0px 4px 8px rgba(0,0,0,0.3);
+            border: 2px solid #000000;
+        }
+        
+        .nav-arrow:hover {
+            transform: translateY(-50%) scale(1.1);
+            background: #005C5F;
+        }
+        
+        .nav-arrow.prev {
+            left: 30px;
+        }
+        
+        .nav-arrow.next {
+            right: 30px;
+        }
+        
+        /* Bottom Bar Container */
+        .bottom-bar {
+            position: absolute;
+            bottom: 0;
             left: 0;
             width: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            padding: 15px 0;
-            border-bottom: 1px solid var(--primary-color);
-        }
-
-        .header-container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.7);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 0 30px;
+            z-index: 5;
+            border-top: 1px solid rgba(0, 151, 157, 0.5);
         }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            text-decoration: none;
-            font-family: 'Orbitron', sans-serif;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        
+        /* Footer */
+        .footer {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            font-size: 16px;
+            color: #FFFFFF;
+            text-align: left;
+            flex: 1;
         }
-
-        .logo i {
-            font-size: 1.8rem;
-        }
-
-        nav ul {
-            display: flex;
-            list-style: none;
-        }
-
-        nav ul li {
-            margin-left: 25px;
-        }
-
-        nav ul li a {
-            color: #cccccc;
-            text-decoration: none;
+        
+        /* Slide Counter */
+        .slide-counter {
+            background: #00979D;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 16px;
             font-weight: 600;
-            transition: all 0.3s ease;
-            position: relative;
-            font-family: 'Orbitron', sans-serif;
-            text-transform: uppercase;
-            font-size: 0.9rem;
-        }
-
-        nav ul li a:hover {
-            color: var(--primary-color);
-        }
-
-        nav ul li a::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background-color: var(--primary-color);
-            transition: width 0.3s ease;
-        }
-
-        nav ul li a:hover::after {
-            width: 100%;
-        }
-
-        .menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--primary-color);
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        /* Hero Section */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            box-shadow: 0px 4px 8px rgba(0,0,0,0.3);
+            border: 2px solid #000000;
             text-align: center;
-            position: relative;
-            padding: 80px 20px 20px;
+            min-width: 80px;
         }
-
-        .hero-content {
-            max-width: 800px;
-            z-index: 1;
-            animation: fadeInUp 1s ease;
-        }
-
-        .hero h1 {
-            font-size: 3.5rem;
-            margin-bottom: 20px;
-            color: var(--primary-color);
-            text-shadow: 0 0 10px var(--primary-color);
-            font-family: 'Orbitron', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .hero p {
-            font-size: 1.2rem;
-            margin-bottom: 30px;
-            color: #cccccc;
-        }
-
-        .typing-effect {
-            border-right: 2px solid var(--primary-color);
-            animation: blink 1s infinite;
-        }
-
-        .glitch {
-            position: relative;
-            color: var(--primary-color);
-            font-size: 3.5rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75),
-                        -0.05em -0.025em 0 rgba(0, 255, 0, 0.75),
-                        0.025em 0.05em 0 rgba(0, 0, 255, 0.75);
-            animation: glitch 500ms infinite;
-        }
-
-        @keyframes glitch {
-            0% {
-                text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75),
-                            -0.05em -0.025em 0 rgba(0, 255, 0, 0.75),
-                            0.025em 0.05em 0 rgba(0, 0, 255, 0.75);
-            }
-            14% {
-                text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75),
-                            -0.05em -0.025em 0 rgba(0, 255, 0, 0.75),
-                            0.025em 0.05em 0 rgba(0, 0, 255, 0.75);
-            }
-            15% {
-                text-shadow: -0.05em -0.025em 0 rgba(255, 0, 0, 0.75),
-                            0.025em 0.025em 0 rgba(0, 255, 0, 0.75),
-                            -0.05em -0.05em 0 rgba(0, 0, 255, 0.75);
-            }
-            49% {
-                text-shadow: -0.05em -0.025em 0 rgba(255, 0, 0, 0.75),
-                            0.025em 0.025em 0 rgba(0, 255, 0, 0.75),
-                            -0.05em -0.05em 0 rgba(0, 0, 255, 0.75);
-            }
-            50% {
-                text-shadow: 0.05em 0.025em 0 rgba(255, 0, 0, 0.75),
-                            0.05em 0 0 rgba(0, 255, 0, 0.75),
-                            0 -0.05em 0 rgba(0, 0, 255, 0.75);
-            }
-            99% {
-                text-shadow: 0.05em 0.025em 0 rgba(255, 0, 0, 0.75),
-                            0.05em 0 0 rgba(0, 255, 0, 0.75),
-                            0 -0.05em 0 rgba(0, 0, 255, 0.75);
-            }
-            100% {
-                text-shadow: -0.05em 0 0 rgba(255, 0, 0, 0.75),
-                            -0.025em -0.05em 0 rgba(0, 255, 0, 0.75),
-                            -0.05em -0.025em 0 rgba(0, 0, 255, 0.75);
-            }
-        }
-
-        /* About Section */
-        .about {
-            padding: 100px 0;
-            background-color: rgba(0, 10, 0, 0.5);
-            position: relative;
-        }
-
-        .about::before {
-            content: '';
+        
+        /* Progress Percentage */
+        .progress-percentage {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none"/><path d="M0,0 L100,100 M100,0 L0,100" stroke="%2300ff41" stroke-width="0.5" opacity="0.1"/></svg>');
-            z-index: -1;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        .section-title {
-            text-align: center;
-            margin-bottom: 60px;
-            position: relative;
-        }
-
-        .section-title h2 {
-            font-size: 2.5rem;
-            position: relative;
-            display: inline-block;
-            text-shadow: 0 0 10px var(--primary-color);
-            font-family: 'Orbitron', sans-serif;
-            text-transform: uppercase;
-        }
-
-        .section-title h2::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
+            top: 10px;
             left: 50%;
             transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background-color: var(--primary-color);
-            box-shadow: 0 0 10px var(--primary-color);
-        }
-
-        .about-content {
-            display: flex;
-            align-items: center;
-            gap: 50px;
-        }
-
-        .about-text {
-            flex: 1;
-        }
-
-        .about-text p {
-            margin-bottom: 20px;
-            font-size: 1.1rem;
-            color: #cccccc;
-        }
-
-        .about-img {
-            flex: 1;
-            text-align: center;
-            position: relative;
-        }
-
-        .about-img img {
-            max-width: 100%;
-            border-radius: 10px;
-            border: 2px solid var(--primary-color);
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
-            transition: all 0.5s ease;
-        }
-
-        .about-img img:hover {
-            transform: scale(1.03);
-            box-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
-        }
-
-        .about-img::before {
-            content: '';
-            position: absolute;
-            top: -10px;
-            left: -10px;
-            right: -10px;
-            bottom: -10px;
-            border: 1px solid var(--primary-color);
-            border-radius: 10px;
-            z-index: -1;
-            opacity: 0.5;
-        }
-
-        /* Skills Section */
-        .skills {
-            padding: 100px 0;
-            background-color: rgba(0, 5, 0, 0.7);
-        }
-
-        .skills-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 30px;
-            margin-top: 50px;
-        }
-
-        .skill-card {
-            background-color: rgba(0, 20, 0, 0.7);
-            border: 1px solid var(--primary-color);
-            border-radius: 10px;
-            padding: 25px;
-            text-align: center;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .skill-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, transparent, rgba(0, 255, 65, 0.1), transparent);
-            transform: translateX(-100%);
-            transition: transform 0.6s;
-        }
-
-        .skill-card:hover::before {
-            transform: translateX(100%);
-        }
-
-        .skill-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 20px rgba(0, 255, 65, 0.2);
-        }
-
-        .skill-icon {
-            font-size: 3rem;
-            color: var(--primary-color);
-            margin-bottom: 20px;
-        }
-
-        .skill-title {
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            color: var(--primary-color);
-            font-family: 'Orbitron', sans-serif;
-            text-transform: uppercase;
-        }
-
-        .skill-desc {
-            color: #cccccc;
-            font-size: 0.95rem;
-        }
-
-        /* Projects Section */
-        .projects {
-            padding: 100px 0;
-            background-color: rgba(0, 10, 0, 0.5);
-        }
-
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 30px;
-            margin-top: 50px;
-        }
-
-        .project-card {
-            background-color: rgba(0, 20, 0, 0.7);
-            border: 1px solid var(--primary-color);
-            border-radius: 10px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .project-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(0, 255, 65, 0.3);
-        }
-
-        .project-img {
-            height: 200px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .project-img img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: all 0.5s ease;
-        }
-
-        .project-card:hover .project-img img {
-            transform: scale(1.05);
-            filter: brightness(1.2) contrast(1.1);
-        }
-
-        .project-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
             background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: all 0.3s ease;
-        }
-
-        .project-card:hover .project-overlay {
-            opacity: 1;
-        }
-
-        .project-links {
-            display: flex;
-            gap: 15px;
-        }
-
-        .project-link {
-            display: inline-block;
-            width: 50px;
-            height: 50px;
-            background-color: var(--primary-color);
-            color: var(--bg-color);
-            border-radius: 50%;
-            text-align: center;
-            line-height: 50px;
-            font-size: 1.2rem;
-            transition: all 0.3s ease;
-        }
-
-        .project-link:hover {
-            background-color: var(--secondary-color);
-            transform: scale(1.1);
-        }
-
-        .project-info {
-            padding: 20px;
-        }
-
-        .project-title {
-            font-size: 1.4rem;
-            margin-bottom: 10px;
-            color: var(--primary-color);
-            font-family: 'Orbitron', sans-serif;
-            text-transform: uppercase;
-        }
-
-        .project-desc {
-            color: #cccccc;
-            margin-bottom: 15px;
-        }
-
-        .project-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .project-tag {
-            display: inline-block;
-            background-color: rgba(0, 255, 65, 0.2);
-            color: var(--primary-color);
-            padding: 5px 10px;
+            color: #FFFFFF;
+            padding: 5px 15px;
             border-radius: 20px;
-            font-size: 0.8rem;
-            border: 1px solid var(--primary-color);
-        }
-
-        /* Contact Section */
-        .contact {
-            padding: 100px 0;
-            background-color: rgba(0, 5, 0, 0.7);
-        }
-
-        .contact-form {
-            max-width: 700px;
-            margin: 0 auto;
-            background-color: rgba(0, 20, 0, 0.7);
-            padding: 40px;
-            border-radius: 10px;
-            border: 1px solid var(--primary-color);
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
+            font-size: 14px;
             font-weight: 600;
-            color: var(--primary-color);
-            font-family: 'Orbitron', sans-serif;
-            text-transform: uppercase;
-            font-size: 0.9rem;
+            z-index: 101;
+            border: 1px solid rgba(255, 152, 0, 0.5);
         }
-
-        .form-group input,
-        .form-group textarea {
+        
+        /* Highlight text */
+        .highlight {
+            color: #FF9800; /* Arduino Orange */
+            font-weight: 600;
+        }
+        
+        /* Content with Image Layout */
+        .content-with-image {
+            display: flex;
             width: 100%;
-            padding: 12px 15px;
-            border: 1px solid var(--primary-color);
-            border-radius: 5px;
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 1rem;
-            background-color: rgba(0, 0, 0, 0.5);
-            color: #cccccc;
-            transition: all 0.3s ease;
+            max-width: 1100px;
+            gap: 30px;
+            align-items: center;
         }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--secondary-color);
-            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
-            background-color: rgba(0, 0, 0, 0.7);
+        
+        .content {
+            flex: 1.2;
+            text-align: left;
         }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 150px;
-        }
-
-        .submit-btn {
-            background-color: var(--primary-color);
-            color: var(--bg-color);
-            border: none;
-            padding: 12px 30px;
-            border-radius: 5px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: block;
-            margin: 0 auto;
-            font-family: 'Orbitron', sans-serif;
-            text-transform: uppercase;
-        }
-
-        .submit-btn:hover {
-            background-color: var(--secondary-color);
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 255, 65, 0.3);
-        }
-
-        /* Footer */
-        footer {
-            background-color: rgba(0, 0, 0, 0.9);
-            color: #cccccc;
-            padding: 50px 0 20px;
-            text-align: center;
-            border-top: 1px solid var(--primary-color);
-        }
-
-        .social-icons {
-            margin-bottom: 30px;
-        }
-
-        .social-icons a {
-            display: inline-block;
-            width: 50px;
-            height: 50px;
-            background-color: rgba(0, 255, 65, 0.1);
-            border: 1px solid var(--primary-color);
-            border-radius: 50%;
-            text-align: center;
-            line-height: 50px;
-            margin: 0 10px;
-            color: var(--primary-color);
-            font-size: 1.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .social-icons a:hover {
-            background-color: var(--primary-color);
-            color: var(--bg-color);
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 255, 65, 0.3);
-        }
-
-        .footer-text {
-            margin-top: 20px;
-            font-size: 0.9rem;
-        }
-
-        .footer-text p {
-            margin-bottom: 10px;
-            color: #cccccc;
-        }
-
-        .hacker-text {
-            color: var(--primary-color);
-            font-family: 'Roboto Mono', monospace;
-        }
-
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .fade-in {
+        
+        .image-placeholder {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform: scale(0.9);
             opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.8s ease;
+            animation: zoomIn 0.8s forwards;
+            animation-delay: 0.5s;
         }
-
-        .fade-in.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Responsive Design */
-        @media (max-width: 992px) {
-            .about-content {
-                flex-direction: column;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-            
-            .hero p {
-                font-size: 1rem;
-            }
-            
-            .menu-toggle {
-                display: block;
-            }
-            
-            nav {
-                position: fixed;
-                top: 70px;
-                right: -100%;
-                width: 250px;
-                height: calc(100vh - 70px);
-                background-color: rgba(0, 0, 0, 0.95);
-                backdrop-filter: blur(10px);
-                padding: 20px;
-                transition: all 0.3s ease;
-                z-index: 100;
-                border-left: 1px solid var(--primary-color);
-            }
-            
-            nav.active {
-                right: 0;
-            }
-            
-            nav ul {
-                flex-direction: column;
-            }
-            
-            nav ul li {
-                margin: 15px 0;
-            }
-            
-            .skills-grid,
-            .projects-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .terminal-container {
-                width: 95%;
-                height: 80vh;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .hero h1 {
-                font-size: 2rem;
-            }
-            
-            .section-title h2 {
-                font-size: 2rem;
-            }
-            
-            .contact-form {
-                padding: 30px 20px;
-            }
-            
-            .terminal-container {
-                width: 98%;
-                height: 90vh;
+        
+        @keyframes zoomIn {
+            to {
+                transform: scale(1);
+                opacity: 1;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Matrix Rain Background -->
-    <canvas id="matrix-canvas"></canvas>
-
-    <!-- Terminal Container -->
-    <div class="terminal-container" id="terminal-container">
-        <div class="terminal-header">
-            <div class="terminal-title">WELCOME TO YASH'S PORTFOLIO</div>
-            <div class="terminal-buttons">
-                <div class="terminal-button minimize"></div>
-                <div class="terminal-button maximize"></div>
-                <div class="terminal-button close"></div>
+    <div class="slide-container">
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        
+        <!-- Progress Percentage -->
+        <div class="progress-percentage" id="progress-percentage">9%</div>
+        
+        <!-- Slide 1: Title Slide -->
+        <div class="slide active">
+            <div class="title-box">
+                <h1>🔌 Introduction to Arduino</h1>
+                <h2>Learn Electronics + Coding in 35 Minutes</h2>
+            </div>
+            <div class="icon-container">
+                <i class="fas fa-microchip"></i>
             </div>
         </div>
-        <div class="terminal-body" id="terminal-body">
-            <div id="terminal-output">
-                <div class="terminal-line">
-                    <span class="output">Initializing secure connection...</span>
-                </div>
-                <div class="terminal-line">
-                    <span class="output">Establishing encrypted channel...</span>
-                </div>
-                <div class="terminal-line">
-                    <span class="output">Verifying security protocols...</span>
-                </div>
-                <div class="terminal-line">
-                    <span class="output">Access granted. Welcome to Yash Bhandurge's secure terminal.</span>
-                </div>
-                <div class="terminal-line">
-                    <span class="output">========================================</span>
-                </div>
-                <div class="terminal-line">
-                    <span class="output">This is a secure terminal interface to access Yash's portfolio.</span>
-                </div>
-                <div class="terminal-line">
-                    <span class="output">Press Enter to continue...</span>
-                </div>
+        
+        <!-- Slide 2: What is Arduino? -->
+        <div class="slide">
+            <div class="title-box">
+                <h1>What is Arduino?</h1>
             </div>
-            <div class="terminal-input-container" id="input-container" style="display: none;">
-                <span class="prompt">root@yash:~$</span>
-                <input type="text" class="terminal-input" id="terminal-input">
-                <span class="cursor"></span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Portfolio Content -->
-    <div class="portfolio" id="portfolio">
-        <!-- Header -->
-        <header>
-            <div class="header-container">
-                <a href="#" class="logo">
-                    <i class="fas fa-terminal"></i>
-                    YASH BHANDURGE
-                </a>
-                <button class="menu-toggle" id="menuToggle">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <nav id="mainNav">
+            <div class="content-with-image">
+                <div class="content">
                     <ul>
-                        <li><a href="#home">Home</a></li>
-                        <li><a href="#about">About</a></li>
-                        <li><a href="#skills">Skills</a></li>
-                        <li><a href="#projects">Projects</a></li>
-                        <li><a href="#contact">Contact</a></li>
+                        <li>Arduino is a small computer on a board</li>
+                        <li>It can read sensors (input) and control devices (output)</li>
+                        <li>Used in robotics, automation, and projects worldwide</li>
+                        <li>Easy to learn for beginners</li>
                     </ul>
-                </nav>
+                </div>
+                <div class="image-placeholder">
+                    <div class="icon-container">
+                        <i class="fas fa-microchip"></i>
+                    </div>
+                </div>
             </div>
-        </header>
+        </div>
+        
+        <!-- Slide 3: Why Learn Arduino? -->
+        <div class="slide">
+            <div class="title-box">
+                <h1>Why Learn Arduino?</h1>
+            </div>
+            <ul class="bullet-with-icon">
+                <li><i class="fas fa-seedling"></i> Make smart agriculture tools</li>
+                <li><i class="fas fa-robot"></i> Build robots & automation projects</li>
+                <li><i class="fas fa-lightbulb"></i> Create cool science fair projects</li>
+                <li><i class="fas fa-bolt"></i> Learn coding + electronics together</li>
+            </ul>
+        </div>
+        
+        <!-- Slide 4: Arduino Board Overview -->
+        <div class="slide">
+            <div class="title-box">
+                <h1>Arduino Board Overview</h1>
+            </div>
+            <div class="two-column">
+                <div class="column">
+                    <h3>Key Components</h3>
+                    <ul>
+                        <li>🔹 <strong>Power Pins</strong>: 5V, 3.3V, GND</li>
+                        <li>🔹 <strong>Digital Pins</strong>: For ON/OFF signals</li>
+                        <li>🔹 <strong>Analog Pins</strong>: For sensors (temperature, light)</li>
+                        <li>🔹 <strong>USB Port</strong>: Upload code</li>
+                    </ul>
+                </div>
+                <div class="column">
+                    <h3>Additional Features</h3>
+                    <ul>
+                        <li>🔹 <strong>Reset Button</strong>: Restart code</li>
+                        <li>🔹 <strong>LED (Pin 13)</strong>: Built-in test LED</li>
+                        <li>🔹 <strong>Microcontroller (ATmega328)</strong>: The brain</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="icon-container">
+                <i class="fas fa-microchip"></i>
+            </div>
+        </div>
+        
+        <!-- Slide 5: First Project: Blink LED -->
+        <div class="slide">
+            <div class="title-box">
+                <h1>First Project: Blink LED</h1>
+            </div>
+            <ul>
+                <li>Step 1: Connect LED to Pin 13 + GND</li>
+                <li>Step 2: Write code to turn it ON/OFF</li>
+                <li>Step 3: Upload via USB</li>
+                <li>🎉 LED will blink every second!</li>
+            </ul>
+            <div class="icon-container">
+                <i class="fas fa-lightbulb"></i>
+            </div>
+        </div>
+        
+        <!-- Slide 6: Blink LED Code -->
+        <div class="slide">
+            <div class="title-box">
+                <h1>Blink LED Code</h1>
+            </div>
+            <div class="code-block"><span class="keyword">void</span> <span class="function">setup</span><span class="punctuation">()</span> <span class="punctuation">{</span>
+  <span class="builtin">pinMode</span><span class="punctuation">(</span><span class="number">13</span><span class="punctuation">,</span> <span class="constant">OUTPUT</span><span class="punctuation">)</span><span class="punctuation">;</span>
+<span class="punctuation">}</span>
 
-        <!-- Hero Section -->
-        <section class="hero" id="home">
-            <div class="hero-content">
-                <h1 class="glitch">YASH BHANDURGE</h1>
-                <p><span class="typing-effect" id="typing-text"></span></p>
+<span class="keyword">void</span> <span class="function">loop</span><span class="punctuation">()</span> <span class="punctuation">{</span>
+  <span class="builtin">digitalWrite</span><span class="punctuation">(</span><span class="number">13</span><span class="punctuation">,</span> <span class="constant">HIGH</span><span class="punctuation">)</span><span class="punctuation">;</span>
+  <span class="builtin">delay</span><span class="punctuation">(</span><span class="number">1000</span><span class="punctuation">)</span><span class="punctuation">;</span>
+  <span class="builtin">digitalWrite</span><span class="punctuation">(</span><span class="number">13</span><span class="punctuation">,</span> <span class="constant">LOW</span><span class="punctuation">)</span><span class="punctuation">;</span>
+  <span class="builtin">delay</span><span class="punctuation">(</span><span class="number">1000</span><span class="punctuation">)</span><span class="punctuation">;</span>
+<span class="punctuation">}</span></div>
+            <div class="content-box">
+                <ul>
+                    <li><strong>setup()</strong> → Runs once, sets Pin 13 as output</li>
+                    <li><strong>loop()</strong> → Runs forever, LED ON (1s), OFF (1s)</li>
+                </ul>
             </div>
-        </section>
-
-        <!-- About Section -->
-        <section class="about" id="about">
-            <div class="container">
-                <div class="section-title fade-in">
-                    <h2>About Me</h2>
-                </div>
-                <div class="about-content fade-in">
-                    <div class="about-text">
-                        <p>Hello, I'm Yash Bhandurge, a passionate <span class="hacker-text">cybersecurity enthusiast</span> and <span class="hacker-text">ethical hacker</span> with a deep love for exploring the digital realm. My journey into the world of hacking began at a young age, fueled by curiosity about how systems work and how they can be secured.</p>
-                        <p>With a background in computer science and years of hands-on experience, I specialize in penetration testing, vulnerability assessment, and security research. I believe in the power of ethical hacking to make the digital world a safer place for everyone.</p>
-                        <p>When I'm not immersed in code or exploring security vulnerabilities, you can find me contributing to open-source security projects, participating in CTF competitions, or sharing my knowledge through workshops and blog posts.</p>
-                    </div>
-                    <div class="about-img">
-                        <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Hacker setup">
-                    </div>
-                </div>
+        </div>
+        
+        <!-- Slide 7: Second Project: Light Sensor -->
+        <div class="slide">
+            <div class="title-box">
+                <h1>Second Project: Light Sensor</h1>
             </div>
-        </section>
-
-        <!-- Skills Section -->
-        <section class="skills" id="skills">
-            <div class="container">
-                <div class="section-title fade-in">
-                    <h2>Skills</h2>
-                </div>
-                <div class="skills-grid fade-in">
-                    <div class="skill-card">
-                        <div class="skill-icon">
-                            <i class="fas fa-shield-alt"></i>
-                        </div>
-                        <h3 class="skill-title">Penetration Testing</h3>
-                        <p class="skill-desc">Identifying vulnerabilities in systems and networks through authorized simulated cyberattacks.</p>
-                    </div>
-                    <div class="skill-card">
-                        <div class="skill-icon">
-                            <i class="fas fa-lock"></i>
-                        </div>
-                        <h3 class="skill-title">Cryptography</h3>
-                        <p class="skill-desc">Implementing and analyzing encryption algorithms to secure sensitive data and communications.</p>
-                    </div>
-                    <div class="skill-card">
-                        <div class="skill-icon">
-                            <i class="fas fa-bug"></i>
-                        </div>
-                        <h3 class="skill-title">Vulnerability Assessment</h3>
-                        <p class="skill-desc">Systematic evaluation of security weaknesses in IT systems and infrastructure.</p>
-                    </div>
-                    <div class="skill-card">
-                        <div class="skill-icon">
-                            <i class="fas fa-code"></i>
-                        </div>
-                        <h3 class="skill-title">Secure Coding</h3>
-                        <p class="skill-desc">Developing software with security best practices to prevent common vulnerabilities.</p>
-                    </div>
-                    <div class="skill-card">
-                        <div class="skill-icon">
-                            <i class="fas fa-network-wired"></i>
-                        </div>
-                        <h3 class="skill-title">Network Security</h3>
-                        <p class="skill-desc">Designing and implementing secure network architectures to protect against cyber threats.</p>
-                    </div>
-                    <div class="skill-card">
-                        <div class="skill-icon">
-                            <i class="fas fa-user-secret"></i>
-                        </div>
-                        <h3 class="skill-title">Digital Forensics</h3>
-                        <p class="skill-desc">Investigating cybercrimes and recovering data from digital devices for legal evidence.</p>
-                    </div>
+            <ul>
+                <li>Use an LDR (Light Dependent Resistor)</li>
+                <li>Arduino reads brightness from Analog Pin (A0)</li>
+                <li>If dark → LED ON, If bright → LED OFF</li>
+                <li>This is how <span class="highlight">automatic street lights</span> work!</li>
+            </ul>
+            <div class="icon-container">
+                <i class="fas fa-sun"></i>
+            </div>
+        </div>
+        
+        <!-- Slide 8: Applications of Arduino -->
+        <div class="slide">
+            <div class="title-box">
+                <h1>Applications of Arduino</h1>
+            </div>
+            <ul class="bullet-with-icon">
+                <li><i class="fas fa-traffic-light"></i> Traffic light simulation</li>
+                <li><i class="fas fa-thermometer-half"></i> Temperature monitoring</li>
+                <li><i class="fas fa-seedling"></i> Smart irrigation system</li>
+                <li><i class="fas fa-music"></i> Music & sound projects</li>
+                <li><i class="fas fa-robot"></i> Line-following robots</li>
+            </ul>
+        </div>
+        
+        <!-- Slide 9: Interactive Quiz -->
+        <div class="slide">
+            <div class="title-box">
+                <h1>Interactive Quiz 🎯</h1>
+            </div>
+            <div class="quiz-box">
+                <div class="quiz-question">Which pin is used for built-in LED on Arduino Uno?</div>
+                <div class="quiz-options">
+                    <div class="quiz-option" onclick="checkAnswer(this, false)">Pin 5</div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false)">Pin 10</div>
+                    <div class="quiz-option" onclick="checkAnswer(this, true)">Pin 13</div>
+                    <div class="quiz-option" onclick="checkAnswer(this, false)">Pin A0</div>
                 </div>
             </div>
-        </section>
-
-        <!-- Projects Section -->
-        <section class="projects" id="projects">
-            <div class="container">
-                <div class="section-title fade-in">
-                    <h2>Projects</h2>
-                </div>
-                <div class="projects-grid fade-in">
-                    <div class="project-card">
-                        <div class="project-img">
-                            <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Network Security Analyzer">
-                            <div class="project-overlay">
-                                <div class="project-links">
-                                    <a href="https://github.com/yashbhandurge/network-security-analyzer" target="_blank" class="project-link"><i class="fab fa-github"></i></a>
-                                    <a href="#" class="project-link"><i class="fas fa-external-link-alt"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="project-info">
-                            <h3 class="project-title">Network Security Analyzer</h3>
-                            <p class="project-desc">A comprehensive tool for automated network scanning and vulnerability detection with real-time threat analysis capabilities.</p>
-                            <div class="project-tags">
-                                <span class="project-tag">Python</span>
-                                <span class="project-tag">Scapy</span>
-                                <span class="project-tag">Nmap</span>
-                                <span class="project-tag">Wireshark</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="project-card">
-                        <div class="project-img">
-                            <img src="https://images.unsplash.com/photo-1560419015-7c427e8ae5ba?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Password Cracking Tool">
-                            <div class="project-overlay">
-                                <div class="project-links">
-                                    <a href="https://github.com/yashbhandurge/password-cracking-tool" target="_blank" class="project-link"><i class="fab fa-github"></i></a>
-                                    <a href="#" class="project-link"><i class="fas fa-external-link-alt"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="project-info">
-                            <h3 class="project-title">Password Cracking Tool</h3>
-                            <p class="project-desc">An advanced ethical password auditing tool that tests password strength using various attack methods including dictionary, brute-force, and rainbow table attacks.</p>
-                            <div class="project-tags">
-                                <span class="project-tag">C++</span>
-                                <span class="project-tag">OpenCL</span>
-                                <span class="project-tag">Hashcat</span>
-                                <span class="project-tag">CUDA</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="project-card">
-                        <div class="project-img">
-                            <img src="https://images.unsplash.com/photo-1614064641938-3bbee52942c7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Web Application Firewall">
-                            <div class="project-overlay">
-                                <div class="project-links">
-                                    <a href="https://github.com/yashbhandurge/web-application-firewall" target="_blank" class="project-link"><i class="fab fa-github"></i></a>
-                                    <a href="#" class="project-link"><i class="fas fa-external-link-alt"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="project-info">
-                            <h3 class="project-title">Web Application Firewall</h3>
-                            <p class="project-desc">A custom WAF implementation with machine learning capabilities to detect and prevent web attacks including SQL injection, XSS, and CSRF.</p>
-                            <div class="project-tags">
-                                <span class="project-tag">Go</span>
-                                <span class="project-tag">TensorFlow</span>
-                                <span class="project-tag">Docker</span>
-                                <span class="project-tag">Kubernetes</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="project-card">
-                        <div class="project-img">
-                            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Malware Analysis Tool">
-                            <div class="project-overlay">
-                                <div class="project-links">
-                                    <a href="https://github.com/yashbhandurge/malware-analysis-tool" target="_blank" class="project-link"><i class="fab fa-github"></i></a>
-                                    <a href="#" class="project-link"><i class="fas fa-external-link-alt"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="project-info">
-                            <h3 class="project-title">Malware Analysis Tool</h3>
-                            <p class="project-desc">A sandbox environment for safe malware analysis with behavior monitoring and static analysis capabilities for reverse engineering.</p>
-                            <div class="project-tags">
-                                <span class="project-tag">Python</span>
-                                <span class="project-tag">Cuckoo</span>
-                                <span class="project-tag">IDA Pro</span>
-                                <span class="project-tag">Yara</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        </div>
+        
+        <!-- Slide 10: Conclusion -->
+        <div class="slide">
+            <div class="title-box">
+                <h1>Conclusion</h1>
             </div>
-        </section>
-
-        <!-- Contact Section -->
-        <section class="contact" id="contact">
-            <div class="container">
-                <div class="section-title fade-in">
-                    <h2>Get In Touch</h2>
-                </div>
-                <div class="contact-form fade-in">
-                    <form id="contactForm">
-                        <div class="form-group">
-                            <label for="name">Name</label>
-                            <input type="text" id="name" name="name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="message">Message</label>
-                            <textarea id="message" name="message" required></textarea>
-                        </div>
-                        <button type="submit" class="submit-btn">Send Message</button>
-                    </form>
-                    <div id="form-message" style="display: none; margin-top: 20px; text-align: center; font-size: 1.1rem;"></div>
-                </div>
+            <ul>
+                <li>Arduino makes coding + electronics simple</li>
+                <li>Students can create amazing projects in science fairs</li>
+                <li>Learning by doing = best way to understand technology</li>
+                <li>🚀 Start with small projects → Build big innovations!</li>
+            </ul>
+            <div class="icon-container">
+                <i class="fas fa-rocket"></i>
             </div>
-        </section>
-
-        <!-- Footer -->
-        <footer>
-            <div class="container">
-                <div class="social-icons fade-in">
-                    <a href="https://github.com/yashbhandurge" target="_blank"><i class="fab fa-github"></i></a>
-                    <a href="https://twitter.com/yashbhandurge" target="_blank"><i class="fab fa-twitter"></i></a>
-                    <a href="https://linkedin.com/in/yashbhandurge" target="_blank"><i class="fab fa-linkedin-in"></i></a>
-                    <a href="mailto:yashbhandurge1@gmail.com" target="_blank"><i class="fas fa-envelope"></i></a>
-                </div>
-                <div class="footer-text fade-in">
-                    <p>© 2025 Yash Bhandurge. All rights reserved.</p>
-                    <p>Made with <span class="hacker-text">&lt;/&gt;</span> and <span class="hacker-text">♥</span> by Yash Bhandurge</p>
-                </div>
+        </div>
+        
+        <!-- Slide 11: Thank You -->
+        <div class="slide">
+            <div class="title-box">
+                <h1>Thank You</h1>
+                <h2>Made by - Yash Bhandurge</h2>
             </div>
-        </footer>
+            <div class="icon-container">
+                <i class="fas fa-heart"></i>
+            </div>
+        </div>
+        
+        <!-- Navigation Arrows -->
+        <div class="nav-arrow prev" onclick="changeSlide(-1)">
+            <i class="fas fa-chevron-left"></i>
+        </div>
+        <div class="nav-arrow next" onclick="changeSlide(1)">
+            <i class="fas fa-chevron-right"></i>
+        </div>
+        
+        <!-- Bottom Bar with Footer and Slide Counter -->
+        <div class="bottom-bar">
+            <div class="footer">
+                Made by Yash Bhandurge
+            </div>
+            <div class="slide-counter">
+                <span id="current-slide">1</span> / <span id="total-slides">11</span>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Matrix Rain Effect with Larger Characters
-        const canvas = document.getElementById('matrix-canvas');
-        const ctx = canvas.getContext('2d');
-
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        // Matrix characters - using numbers and some special characters
-        const matrix = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$#@%&*^()";
-        const matrixArray = matrix.split("");
-
-        // Larger font size for the falling characters
-        const fontSize = 20;
-        const columns = canvas.width / fontSize;
-
-        // Array to track the y position of each column
-        const drops = [];
-        for(let x = 0; x < columns; x++) {
-            drops[x] = Math.floor(Math.random() * canvas.height / fontSize);
-        }
-
-        // Function to draw the matrix rain
-        function drawMatrix() {
-            // Semi-transparent black to create trailing effect
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Set the text style
-            ctx.fillStyle = '#00ff41';
-            ctx.font = fontSize + 'px monospace';
-
-            // Draw characters for each column
-            for(let i = 0; i < drops.length; i++) {
-                // Pick a random character from the matrix array
-                const text = matrixArray[Math.floor(Math.random() * matrixArray.length)];
-                
-                // Draw the character
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-                // Reset the drop if it reaches the bottom or randomly
-                if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                    drops[i] = 0;
-                }
-                
-                // Move the drop down
-                drops[i]++;
-            }
-        }
-
-        // Run the matrix animation
-        setInterval(drawMatrix, 35);
-
-        // Terminal Functionality
-        const terminalContainer = document.getElementById('terminal-container');
-        const terminalBody = document.getElementById('terminal-body');
-        const terminalInput = document.getElementById('terminal-input');
-        const terminalOutput = document.getElementById('terminal-output');
-        const inputContainer = document.getElementById('input-container');
-        const portfolio = document.getElementById('portfolio');
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        const progressBar = document.getElementById('progress-bar');
+        const progressPercentage = document.getElementById('progress-percentage');
         
-        let firstEnter = true;
-
-        const commands = {
-            help: () => {
-                return `Available commands:
-  whoami      - Display user information
-  clear       - Clear terminal
-  about       - About this portfolio
-  skills      - Show skills
-  projects    - Show projects
-  contact     - Contact information
-  social      - Social media links
-  exit        - Exit terminal and view portfolio`;
-            },
-            whoami: () => {
-                return `Yash Bhandurge
-Ethical Hacker | Security Researcher | Cybersecurity Enthusiast
-
-Specializing in penetration testing, vulnerability assessment, and security research.
-Passionate about making the digital world a safer place through ethical hacking.
-
-Type 'exit' to view my portfolio.`;
-            },
-            clear: () => {
-                terminalOutput.innerHTML = '';
-                return '';
-            },
-            about: () => {
-                return `Hello, I'm Yash Bhandurge, a passionate cybersecurity enthusiast and ethical hacker with a deep love for exploring the digital realm. My journey into the world of hacking began at a young age, fueled by curiosity about how systems work and how they can be secured.
-
-With a background in computer science and years of hands-on experience, I specialize in penetration testing, vulnerability assessment, and security research. I believe in the power of ethical hacking to make the digital world a safer place for everyone.
-
-When I'm not immersed in code or exploring security vulnerabilities, you can find me contributing to open-source security projects, participating in CTF competitions, or sharing my knowledge through workshops and blog posts.`;
-            },
-            skills: () => {
-                return `My technical skills include:
-
-• Penetration Testing
-• Vulnerability Assessment
-• Cryptography
-• Network Security
-• Web Application Security
-• Secure Coding
-• Reverse Engineering
-• Digital Forensics
-• Malware Analysis
-• Security Research
-• CTF Competitions
-• Security Tool Development`;
-            },
-            projects: () => {
-                return `Featured Projects:
-
-• Network Security Analyzer - A comprehensive tool for automated network scanning and vulnerability detection with real-time threat analysis capabilities.
-
-• Password Cracking Tool - An advanced ethical password auditing tool that tests password strength using various attack methods.
-
-• Web Application Firewall - A custom WAF implementation with machine learning capabilities to detect and prevent web attacks.
-
-• Malware Analysis Tool - A sandbox environment for safe malware analysis with behavior monitoring and static analysis capabilities.
-
-Type 'exit' to view detailed project information in my portfolio.`;
-            },
-            contact: () => {
-                return `You can reach me at:
-Email: yashbhandurge1@gmail.com
-GitHub: github.com/yashbhandurge
-Twitter: @yashbhandurge
-LinkedIn: linkedin.com/in/yashbhandurge
-
-Type 'exit' to view my contact form.`;
-            },
-            social: () => {
-                return `Connect with me on social media:
-GitHub: github.com/yashbhandurge
-Twitter: @yashbhandurge
-LinkedIn: linkedin.com/in/yashbhandurge
-Email: yashbhandurge1@gmail.com
-
-Type 'exit' to view my portfolio with direct links.`;
-            },
-            exit: () => {
-                terminalContainer.style.display = 'none';
-                portfolio.classList.add('visible');
-                initTypingEffect();
-                return 'Exiting terminal... Loading portfolio...';
-            }
-        };
-
-        function addTerminalLine(content, isCommand = false) {
-            const line = document.createElement('div');
-            line.className = 'terminal-line';
-            
-            if (isCommand) {
-                line.innerHTML = `<span class="prompt">root@yash:~$</span> <span class="command">${content}</span>`;
-            } else {
-                line.innerHTML = `<span class="output">${content}</span>`;
-            }
-            
-            terminalOutput.appendChild(line);
-            terminalBody.scrollTop = terminalBody.scrollHeight;
+        // Set total slides count
+        document.getElementById('total-slides').textContent = totalSlides;
+        
+        // Update progress bar function
+        function updateProgressBar() {
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            progressBar.style.width = progress + '%';
+            progressPercentage.textContent = Math.round(progress) + '%';
         }
-
-        // Handle Enter key press
+        
+        // Show the current slide
+        function showSlide(index) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[index].classList.add('active');
+            document.getElementById('current-slide').textContent = index + 1;
+            updateProgressBar();
+        }
+        
+        // Change slide function
+        function changeSlide(direction) {
+            currentSlide += direction;
+            
+            if (currentSlide < 0) {
+                currentSlide = 0;
+            } else if (currentSlide >= totalSlides) {
+                currentSlide = totalSlides - 1;
+            }
+            
+            showSlide(currentSlide);
+        }
+        
+        // Keyboard navigation
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                if (firstEnter) {
-                    // First Enter key press - show command interface
-                    firstEnter = false;
-                    
-                    // Clear the terminal
-                    terminalOutput.innerHTML = '';
-                    
-                    // Show the command prompt
-                    inputContainer.style.display = 'flex';
-                    
-                    // Add welcome message
-                    addTerminalLine('Welcome to Yash Bhandurge\'s terminal interface.');
-                    addTerminalLine('Type \'help\' for available commands.');
-                    addTerminalLine('========================================');
-                    
-                    // Focus on the input
-                    terminalInput.focus();
-                } else {
-                    // Command input handling
-                    const command = terminalInput.value.trim().toLowerCase();
-                    addTerminalLine(command, true);
-                    
-                    if (commands[command]) {
-                        const output = commands[command]();
-                        if (output) {
-                            addTerminalLine(output);
-                        }
-                    } else if (command) {
-                        addTerminalLine(`Command not found: ${command}. Type 'help' for available commands.`);
-                    }
-                    
-                    terminalInput.value = '';
-                }
+            if (e.key === 'ArrowRight') {
+                changeSlide(1);
+            } else if (e.key === 'ArrowLeft') {
+                changeSlide(-1);
             }
         });
-
-        // Typing Effect for Hero Section
-        function initTypingEffect() {
-            const typingText = document.getElementById('typing-text');
-            const text = "Ethical Hacker | Security Researcher | Cybersecurity Enthusiast";
-            let index = 0;
-            
-            function type() {
-                if (index < text.length) {
-                    typingText.textContent += text.charAt(index);
-                    index++;
-                    setTimeout(type, 100);
-                }
-            }
-            
-            type();
-        }
-
-        // Contact Form Submission
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formMessage = document.getElementById('form-message');
-            const formData = new FormData(this);
-            
-            // Show loading message
-            formMessage.style.display = 'block';
-            formMessage.style.color = '#00ff41';
-            formMessage.textContent = 'Sending message...';
-            
-            // Simulate form submission (in a real scenario, you would use FormSubmit or similar service)
-            setTimeout(() => {
-                formMessage.style.color = '#00ff41';
-                formMessage.textContent = 'Thank you for your message! I will get back to you soon.';
-                
-                // Reset form
-                this.reset();
-                
-                // Hide message after 5 seconds
-                setTimeout(() => {
-                    formMessage.style.display = 'none';
-                }, 5000);
-            }, 1500);
-        });
-
-        // Smooth scrolling
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
+        
+        // Quiz functionality
+        function checkAnswer(element, isCorrect) {
+            const options = document.querySelectorAll('.quiz-option');
+            options.forEach(option => {
+                option.classList.remove('correct', 'incorrect');
+                option.style.pointerEvents = 'none';
             });
-        });
-
-        // Mobile menu toggle
-        const menuToggle = document.getElementById('menuToggle');
-        const mainNav = document.getElementById('mainNav');
-        
-        menuToggle.addEventListener('click', () => {
-            mainNav.classList.toggle('active');
-        });
-
-        // Close mobile menu when clicking on a link
-        document.querySelectorAll('#mainNav a').forEach(link => {
-            link.addEventListener('click', () => {
-                mainNav.classList.remove('active');
-            });
-        });
-
-        // Scroll animations
-        const fadeElements = document.querySelectorAll('.fade-in');
-        
-        const fadeInOnScroll = () => {
-            fadeElements.forEach(element => {
-                const elementTop = element.getBoundingClientRect().top;
-                const elementVisible = 150;
-                
-                if (elementTop < window.innerHeight - elementVisible) {
-                    element.classList.add('visible');
-                }
-            });
-        };
-        
-        window.addEventListener('scroll', fadeInOnScroll);
-        
-        // Header scroll effect
-        const header = document.querySelector('header');
-        
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 100) {
-                header.style.padding = '10px 0';
-                header.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
+            
+            if (isCorrect) {
+                element.classList.add('correct');
             } else {
-                header.style.padding = '15px 0';
-                header.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-            }
-        });
-
-        // Resize canvas on window resize
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            
-            // Recalculate columns and drops
-            const newColumns = canvas.width / fontSize;
-            const newDrops = [];
-            
-            for(let x = 0; x < newColumns; x++) {
-                newDrops[x] = Math.floor(Math.random() * canvas.height / fontSize);
+                element.classList.add('incorrect');
             }
             
-            drops.length = 0;
-            drops.push(...newDrops);
-        });
+            // Move to next slide after delay
+            setTimeout(() => {
+                changeSlide(1);
+                // Reset quiz for next time
+                options.forEach(option => {
+                    option.classList.remove('correct', 'incorrect');
+                    option.style.pointerEvents = 'auto';
+                });
+            }, 1500);
+        }
+        
+        // Initialize
+        showSlide(currentSlide);
     </script>
 </body>
 </html>
